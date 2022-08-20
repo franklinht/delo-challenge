@@ -1,4 +1,4 @@
-# Wellcome to the Photoapp by Franklin
+# Wellcome to the Delo-challenge by Franklin
 Simple app which shows a couple of Porguese postal code and addresses
 
 ### Archtecture
