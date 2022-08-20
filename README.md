@@ -12,7 +12,6 @@ We have 2 main schemas.
 ### Features
 * You can see an image as a separated fragment. Just click on image from the list
 * Internet Connection verification
-* You can reload the photo list
 
 ### Important:
 * **Retrofit2** - just because I have to request to a server API
