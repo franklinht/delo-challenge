@@ -1,10 +1,11 @@
-# Wellcome to the Delo-challenge by Franklin
+# Welcome to the Delo-challenge by Franklin
 Simple app which shows a couple of Porguese postal code and addresses
 
-### Archtecture
+### Architecture
 I've Decided to use MVVM, that was the challenge suggestion.
 
 ### Instructions to build
+* I added some //TODO marks in order to show things that I failed
 We have 2 main schemas.
 * **debug** - It is responsible to set the BuildConfig with debug/develop config (ie. API Keys or Base URLs)
 * **release** - As debug variant, we can set the application to release, using proguard and other optimizations
