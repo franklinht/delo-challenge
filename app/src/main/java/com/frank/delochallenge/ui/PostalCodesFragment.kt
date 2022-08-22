@@ -1,5 +1,6 @@
 package com.frank.delochallenge.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
@@ -9,10 +10,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import com.frank.delochallenge.R
-import com.frank.delochallenge.databinding.FragmentSecondBinding
+import com.frank.delochallenge.databinding.FragmentPostalCodesBinding
 import com.frank.delochallenge.model.api.RFBuilder
 import com.frank.delochallenge.model.api.RFHelper
 import com.frank.delochallenge.model.api.StatusResponse
+import com.frank.delochallenge.model.persistence.PostalCode
 import com.frank.delochallenge.model.persistence.PostalCodeDatabase
 import com.frank.delochallenge.ui.adapters.PostalCodeAdapter
 import com.frank.delochallenge.viewmodel.PostalCodesViewModel
@@ -20,19 +22,20 @@ import com.frank.delochallenge.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class SecondFragment : Fragment(R.layout.fragment_second) {
+class PostalCodesFragment : Fragment(R.layout.fragment_postal_codes) {
 
     private lateinit var viewModel: PostalCodesViewModel
     private val postalCodeDB by lazy { activity?.let { PostalCodeDatabase.getDatabase(it).postalCodeDAO() } }
     private lateinit var adapter: PostalCodeAdapter
-    private var _binding: FragmentSecondBinding? = null
+    private var _binding: FragmentPostalCodesBinding? = null
     private val binding get() = _binding!!
+    private lateinit var postalCodesList : List<PostalCode>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentSecondBinding.inflate(inflater, container, false)
+        _binding = FragmentPostalCodesBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,7 +43,6 @@ class SecondFragment : Fragment(R.layout.fragment_second) {
         super.onViewCreated(view, savedInstanceState)
 
         initViewModel()
-
         fillScreen()
     }
 
@@ -52,11 +54,12 @@ class SecondFragment : Fragment(R.layout.fragment_second) {
     }
 
     private fun fillScreen() {
+
         val cached = runBlocking  {
             postalCodeDB?.getCount()!! > 0
         }
 
-        if(cached) {
+        if(!cached) {
             viewModel.getPostalCodes().observe(viewLifecycleOwner, Observer {
                 it?.let { response ->
                     when (response.statusResponse) {
@@ -64,9 +67,11 @@ class SecondFragment : Fragment(R.layout.fragment_second) {
                             lifecycleScope.launch {
                                 viewModel.savePostalCode(response, postalCodeDB)
                             }
+                            runBlocking {
+                                postalCodesList = postalCodeDB?.getAllPostalCodes()!!
+                            }
                             lifecycleScope.launch {
-                                adapter = activity?.let { it1 -> PostalCodeAdapter(it1) }!!
-                                fillPostalCodesList()
+                                fillPostalCodesList(postalCodesList)
                             }
                             binding.rvPostalCode.visibility = View.VISIBLE
                             binding.badConnection.visibility = View.GONE
@@ -86,14 +91,22 @@ class SecondFragment : Fragment(R.layout.fragment_second) {
                 }
             })
         } else {
-            fillPostalCodesList()
+            runBlocking {
+                postalCodesList = postalCodeDB?.getAllPostalCodes()!!
+            }
+
+            fillPostalCodesList(postalCodesList)
             (activity as MainActivity).hideLoading()
         }
     }
 
-    //get info from db
-    private fun fillPostalCodesList() {
+    @SuppressLint("NotifyDataSetChanged")
+    private fun fillPostalCodesList(postalCodesList: List<PostalCode>?) {
+        adapter = PostalCodeAdapter(arrayListOf())
         adapter.apply {
+            if (postalCodesList != null) {
+                addPostalCodes(postalCodesList)
+            }
             notifyDataSetChanged()
         }
         binding.rvPostalCode.adapter = adapter
