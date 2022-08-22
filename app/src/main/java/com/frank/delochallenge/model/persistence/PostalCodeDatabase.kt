@@ -30,7 +30,9 @@ abstract class PostalCodeDatabase : RoomDatabase() {
                 context.applicationContext,
                 PostalCodeDatabase::class.java,
                 "postal_code"
-            ).build()
+            )
+                .allowMainThreadQueries()
+                .build()
         }
     }
 }
